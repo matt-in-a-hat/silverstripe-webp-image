@@ -5,13 +5,11 @@
 
 ## Overview
 
-This module automatically optimizes image assets by converting them to `.webp` format on request. Learn more about the WebP image format [here](https://developers.google.com/speed/webp). Details about the modifications made to this fork, along with the rationale, can be found at the link below.
+This SilverStripe module optimizes image assets by automatically converting them to the `.webp` format on request. Learn more about the benefits of WebP images [here](https://developers.google.com/speed/webp). For details on modifications in this fork and the reasoning behind them, refer to [Tips for Optimizing Page Speeds](https://lucshelton.com/blog/tips-for-optimizing-page-speeds/).
 
-[Tips for Optimizing Page Speeds](https://lucshelton.com/blog/tips-for-optimizing-page-speeds/)
+## NGINX Configuration
 
-## Integration with NGINX
-
-I've modified this add-on so that `.webp` that are created possess the file name of `file_name_goes_here.<original extension>.webp`. The reason for this is so that the images created can be automatically served in place of their original image assets by using a NGINX configuration such as the one below.
+This module is designed to create `.webp` images with filenames structured as `file_name_goes_here.<original extension>.webp`. This enables NGINX to serve these `.webp` files in place of the original images, enhancing performance. Below is a sample NGINX configuration:
 
 ```nginx
 map $http_accept $webp_suffix {
@@ -20,7 +18,6 @@ map $http_accept $webp_suffix {
 }
 
 location ~* /assets/.+\.(?<extension>jpe?g|png|gif|webp)$ {
-    # more_set_headers 'Content-Type: image/webp';
     gzip_static on;
     gzip_types image/png image/x-icon image/webp image/svg+xml image/jpeg image/gif;
 
@@ -31,18 +28,20 @@ location ~* /assets/.+\.(?<extension>jpe?g|png|gif|webp)$ {
 }
 ```
 
-The variable `webp_suffix` will be populated with the `.webp` extension if the requesting web client has `webp` defined as part of its `Accept` header. NGINX will then attempt to find the `.webp` version of the asset, and failing that, it will serve the original instead.
+This configuration uses the `$webp_suffix` variable to serve `.webp` files if the client supports WebP in its `Accept` header. If the `.webp` file is unavailable, NGINX will serve the original image.
 
-## Introduction
+## Features
 
-This module creates webp images from resized jpeg and png images. More Information about webp images [https://developers.google.com/speed/webp/](https://developers.google.com/speed/webp/)
+This module generates `.webp` versions of resized JPEG and PNG images, improving page load times with minimal configuration.
 
 ## Requirements
 
-- Silverstripe > 4.2
-- GDLib with webp Extension
+- SilverStripe > 4.2
+- GD Library with WebP extension enabled
 
 ## Installation
+
+Install the module using Composer:
 
 ```shell
 composer require loveduckie/silverstripe-webp-image
@@ -50,32 +49,37 @@ composer require loveduckie/silverstripe-webp-image
 
 ## Usage
 
-- run `dev/build?flush=1`
+1. Run `dev/build?flush=1` to initialize.
+2. Configure web server to prioritize `.webp` images if available.
 
-- force Browser to load webp image // Example 1 (default)
-edit `.htaccess` in your `root` directory, and add `webp` forwarding in compatible browsers
+### Browser Support Configuration
 
-- force Browser to load webp image // Example 2
-for information on usage of webp image in html see [css-tricks.com](https://css-tricks.com/using-webp-images/)
+#### Option 1: `.htaccess` Configuration
 
-## Quick Testfile for checking if webp is available
+To enable WebP support in compatible browsers, update your root `.htaccess` file with WebP-specific rules.
 
-Below you will find the code to quickly check if webp is available with the installed GD Library. Simply copy this code into a `.php` file in your `root` folder and open the file in a browser.
+#### Option 2: HTML Implementation
+
+For more information on WebP usage in HTML, visit [CSS-Tricks](https://css-tricks.com/using-webp-images/).
+
+## Quick WebP Support Test
+
+To check if WebP support is available via the GD Library, copy the following code into a `.php` file in your root directory and open it in a browser:
 
 ```php
 <?php
 
-if (function_exists(imagewebp)) {
+if (function_exists('imagewebp')) {
     echo "WebP is available";
 } else {
     echo "WebP is not available";
 }
 ```
 
-## TODO
+## Roadmap
 
-- documentation
-- IMagick Support
-- PHP test to check support
-- Delete Webp Image
-- Flush Webp Image
+- Enhanced documentation
+- Support for Imagick
+- PHP tests to verify WebP support
+- Automatic deletion of WebP images
+- WebP image flush functionality
