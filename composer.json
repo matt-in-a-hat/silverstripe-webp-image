@@ -40,7 +40,8 @@
         ]
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "silverstripe/frameworktest": "1.x-dev"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

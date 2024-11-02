@@ -1,0 +1,57 @@
+name: PHP Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: silverstripe
+        options: --health-cmd='mysqladmin ping --silent' --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install Composer dependencies
+        run: |
+          composer install
+
+      - name: Set up environment variables
+        run: |
+          echo "SS_DATABASE_CLASS=MySQLDatabase" >> .env
+          echo "SS_DATABASE_SERVER=127.0.0.1" >> .env
+          echo "SS_DATABASE_USERNAME=root" >> .env
+          echo "SS_DATABASE_PASSWORD=root" >> .env
+          echo "SS_DATABASE_NAME=silverstripe" >> .env
+          echo "SS_ENVIRONMENT_TYPE=dev" >> .env
+          echo "SS_BASE_URL=http://localhost" >> .env
+
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h 127.0.0.1 --silent; do
+            echo "Waiting for database connection..."
+            sleep 5
+          done
+
+      - name: Run PHPUnit tests
+        run: |
+          vendor/bin/phpunit --testsuite silverstripe-webp-image
