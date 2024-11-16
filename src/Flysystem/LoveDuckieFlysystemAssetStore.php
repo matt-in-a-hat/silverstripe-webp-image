@@ -3,84 +3,101 @@
 namespace LoveDuckie\SilverStripe\WebPImage\Flysystem;
 
 use SilverStripe\Assets\Flysystem\FlysystemAssetStore as SS_FlysystemAssetStore;
+use Imagick;
 
 class LoveDuckieFlysystemAssetStore extends SS_FlysystemAssetStore
 {
     private static $webp_default_quality = 80;
 
-    private int $webp_quality;
+    private int $_webp_quality;
 
     public function __construct()
     {
-        $this->webp_quality = $this->config()->webp_default_quality;
+        $this->_webp_quality = LoveDuckieFlysystemAssetStore::$webp_default_quality;
     }
 
-    public function setFromString($data, $filename, $hash = null, $variant = null, $config = array())
+    public function setFromString($data, $filename, $hash = null, $variant = null, $config = [])
     {
         $fileID = $this->getFileID($filename, $hash);
-        if ($this->getPublicFilesystem()->has($fileID)) {
-            if ($filename) {
-                $extension = substr(strrchr($filename, '.'), 1);
-                $tmp_file  = TEMP_PATH . DIRECTORY_SEPARATOR . 'raw_' . uniqid() . '.' . $extension;
-                file_put_contents($tmp_file, $data);
-                $this->createWebPImage($tmp_file, $fileID, $hash, $variant, $config);
-            }
+
+        if ($this->getPublicFilesystem()->has($fileID) && $filename) {
+            $tmpFile = $this->createTemporaryFile($data, $filename);
+            $this->convertToWebP($tmpFile, $filename, $hash, $variant);
         }
+
         return parent::setFromString($data, $filename, $hash, $variant, $config);
     }
 
-    public function setFromLocalFile($path, $filename = null, $hash = null, $variant = null, $config = array())
+    public function setFromLocalFile($path, $filename = null, $hash = null, $variant = null, $config = [])
     {
-        if ($filename) {
-            if (isset($config['visibility']) && $config['visibility'] === self::VISIBILITY_PROTECTED) {
-                //todo: generate protected webp image
-            } else {
-                $this->createWebPImage($path, $filename, $hash, $variant, $config);
-            }
+        if ($filename && empty($config['visibility'] === self::VISIBILITY_PROTECTED)) {
+            $this->convertToWebP($path, $filename, $hash, $variant);
         }
 
         return parent::setFromLocalFile($path, $filename, $hash, $variant, $config);
     }
 
-    public function createWebPImage($path, $filename, $hash, $variant = false)
+    /**
+     * @param string $sourcePath
+     * @param string $filename
+     * @param string|null $hash
+     * @param $variant
+     * @return void
+     */
+    private function convertToWebP(string $sourcePath, string $filename, ?string $hash, $variant = null): void
     {
-
-        if (!function_exists('imagewebp') || !function_exists('imagecreatefromjpeg') || !function_exists('imagecreatefrompng')) {
+        if (!extension_loaded('imagick')) {
             return;
         }
 
-        $orgpath = './' . $this->getAsURL($filename, $hash, $variant);
-        $webpImageRelativeFilePath = $this->createWebPName($orgpath);
-        list($width, $height, $type, $attr) = getimagesize($path);
+        try {
+            $imagick = new Imagick($sourcePath);
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality($this->_webp_quality);
 
-        switch ($type) {
-            case IMAGETYPE_GIF:
-                $img = imagecreatefromgif($path);
-                imagepalettetotruecolor($img);
-                imagesavealpha($img, true); // save alphablending setting (important)
-                // imagewebp($img, $webpImageRelativeFilePath, $this->webp_quality);
-                break;
-            case IMAGETYPE_JPEG:
-                $img = imagecreatefromjpeg($path);
-                // imagewebp($img, $webpImageRelativeFilePath, $this->webp_quality);
-                break;
-            case IMAGETYPE_PNG:
-                $img = imagecreatefrompng($path);
-                imagesavealpha($img, true); // save alphablending setting (important)
-                break;
-        }
+            $webpPath = $this->getAbsoluteWebPPath($filename, $hash, $variant);
+            $this->ensureDirectoryExists(dirname($webpPath));
 
-        if ($img) {
-            imagewebp($img, $webpImageRelativeFilePath, $this->webp_quality);
-            imagedestroy($img);
+            $imagick->writeImage($webpPath);
+            $imagick->clear();
+        } catch (\Exception $e) {
+            error_log('Failed to convert image to WebP: ' . $e->getMessage());
         }
     }
 
-    public function createWebPName($filename)
+    private function createTemporaryFile(string $data, string $filename): string
     {
-        $picname = pathinfo($filename, PATHINFO_FILENAME);
-        $directory = pathinfo($filename, PATHINFO_DIRNAME);
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
-        return $directory . '/' . $picname . '.' . $extension . '.webp';
+        $tmpFile = TEMP_PATH . DIRECTORY_SEPARATOR . uniqid('raw_') . '.' . $extension;
+        file_put_contents($tmpFile, $data);
+        return $tmpFile;
+    }
+
+    private function getAbsoluteWebPPath(string $filename, ?string $hash, $variant = null): string
+    {
+        $relativeWebPPath = $this->createWebPName($this->getAsURL($filename, $hash, $variant));
+        return PUBLIC_PATH . DIRECTORY_SEPARATOR . $relativeWebPPath;
+    }
+
+    /**
+     * @param string $filename
+     * @return string
+     */
+    private function createWebPName(string $filename): string
+    {
+        $directory = pathinfo($filename, PATHINFO_DIRNAME);
+        $picname = pathinfo($filename, PATHINFO_FILENAME);
+        return $directory . '/' . $picname . '.webp';
+    }
+
+    /**
+     * @param string $directory
+     * @return void
+     */
+    private function ensureDirectoryExists(string $directory): void
+    {
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
     }
 }
