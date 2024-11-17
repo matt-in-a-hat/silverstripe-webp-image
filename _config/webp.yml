@@ -10,9 +10,3 @@ After:
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Assets\Storage\AssetStore:
     class: LoveDuckie\SilverStripe\WebPImage\Flysystem\LoveDuckieFlysystemAssetStore
-
-#SilverStripe\Assets\Storage\DBFile:
-#  supported_images:
-#    - 'image/webp'
-#  extensions:
-#    - LoveDuckie\SilverStripe\WebPImage\Extensions\DBFileExtension

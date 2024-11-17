@@ -28,6 +28,14 @@ class LoveDuckieFlysystemAssetStore extends SS_FlysystemAssetStore
         return parent::setFromString($data, $filename, $hash, $variant, $config);
     }
 
+    /**
+     * @param $path
+     * @param $filename
+     * @param $hash
+     * @param $variant
+     * @param $config
+     * @return array
+     */
     public function setFromLocalFile($path, $filename = null, $hash = null, $variant = null, $config = [])
     {
         if ($filename && empty($config['visibility'] === self::VISIBILITY_PROTECTED)) {
