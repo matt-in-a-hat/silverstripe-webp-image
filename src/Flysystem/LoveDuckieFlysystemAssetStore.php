@@ -94,8 +94,9 @@ class LoveDuckieFlysystemAssetStore extends SS_FlysystemAssetStore
     private function createWebPName(string $filename): string
     {
         $directory = pathinfo($filename, PATHINFO_DIRNAME);
-        $picname = pathinfo($filename, PATHINFO_FILENAME);
-        return $directory . '/' . $picname . '.webp';
+//        $picname = pathinfo($filename, PATHINFO_FILENAME);
+        $baseName = pathinfo($filename, PATHINFO_BASENAME);
+        return $directory . '/' . $baseName . '.webp';
     }
 
     /**
