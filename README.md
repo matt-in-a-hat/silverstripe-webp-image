@@ -1,15 +1,58 @@
+<div align="center">
+
 # silverstripe-webp-image
 
-[![Build Status](https://travis-ci.org/loveduckie/silverstripe-webp-image.svg?branch=master)](https://travis-ci.org/loveduckie/silverstripe-webp-image)
+</div>
+
+[![Build Status](https://travis-ci.org/LoveDuckie/silverstripe-webp-image.svg?branch=master)](https://travis-ci.org/loveduckie/silverstripe-webp-image)
 [![License](https://poser.pugx.org/loveduckie/silverstripe-webp-image/license)](https://packagist.org/packages/loveduckie/silverstripe-webp-image)
 
 ## Overview
 
-This SilverStripe module optimizes image assets by automatically converting them to the `.webp` format on request. Learn more about the benefits of WebP images [here](https://developers.google.com/speed/webp). For details on modifications in this fork and the reasoning behind them, refer to [Tips for Optimizing Page Speeds](https://lucshelton.com/blog/tips-for-optimizing-page-speeds/).
+The **silverstripe-webp-image** module enhances your SilverStripe website's performance by automatically converting image assets to the efficient `.webp` format on demand. Learn more about WebP's benefits [here](https://developers.google.com/speed/webp). For additional details and insights, check out [Tips for Optimizing Page Speeds](https://lucshelton.com/blog/tips-for-optimizing-page-speeds/).
 
-## NGINX Configuration
+## Features
 
-This module is designed to create `.webp` images with filenames structured as `file_name_goes_here.<original extension>.webp`. This enables NGINX to serve these `.webp` files in place of the original images, enhancing performance. Below is a sample NGINX configuration:
+- :white_check_mark: Automatically generates `.webp` versions of resized JPEG, PNG, and GIF images.
+- :white_check_mark: Significantly improves page load times with minimal configuration.
+- :white_check_mark: Designed for seamless integration with [NGINX](https://nginx.org/).
+- :white_check_mark: Native support for [Imagick](https://www.php.net/manual/en/book.imagick.php).
+
+## How does it work?
+
+Resized or altered versions of image assets are stored to disk for caching and optimization purposes. This extension intercepts calls for retrieving these cached and resized assets by automatically generating `.webp` counterparts of the same images. This usually occurs when leveraging Silverstripe's [image manipulation](https://docs.silverstripe.org/en/5/developer_guides/files/images/#manipulating-images-in-templates) features via its templating engine.
+
+Afterwards, and depending on your server's configuration, NGINX will attempt to serve the `.webp` version of your resized image asset instead of the source version. If the `.webp` version does not exist, then it will instead serve the original version.
+
+This extension provides conversion support for `.jpeg`, `.png`, and `.gif` assets using [Imagick](https://www.php.net/manual/en/book.imagick.php).
+
+## Requirements
+
+- SilverStripe `>= 4.2`
+- GD Library with WebP support enabled
+- Imagick
+
+## Installation
+
+Install the module using Composer:
+
+```bash
+composer require loveduckie/silverstripe-webp-image
+```
+
+Run the following to initialize:
+
+```bash
+vendor/bin/sake dev/build flush=1
+```
+
+## Web Server Configuration
+
+This module creates `.webp` images with filenames structured as `file_name.<original_extension>.webp`. To serve WebP images when supported, configure your web server as follows:
+
+### NGINX Configuration
+
+Add the following to your NGINX configuration:
 
 ```nginx
 map $http_accept $webp_suffix {
@@ -28,43 +71,15 @@ location ~* /assets/.+\.(?<extension>jpe?g|png|gif|webp)$ {
 }
 ```
 
-This configuration uses the `$webp_suffix` variable to serve `.webp` files if the client supports WebP in its `Accept` header. If the `.webp` file is unavailable, NGINX will serve the original image.
+This setup detects browsers that support WebP via the `Accept` header and serves the `.webp` version if available.
 
-## Features
+### Apache `.htaccess` Configuration
 
-This module generates `.webp` versions of resized JPEG and PNG images, improving page load times with minimal configuration.
+For Apache users, add rules to prioritize `.webp` files in your `.htaccess`. For detailed instructions, see [CSS-Tricks' guide](https://css-tricks.com/using-webp-images/).
 
-## Requirements
+## Testing WebP Support
 
-- SilverStripe > 4.2
-- GD Library with WebP extension enabled
-
-## Installation
-
-Install the module using Composer:
-
-```shell
-composer require loveduckie/silverstripe-webp-image
-```
-
-## Usage
-
-1. Run `dev/build?flush=1` to initialize.
-2. Configure web server to prioritize `.webp` images if available.
-
-### Browser Support Configuration
-
-#### Option 1: `.htaccess` Configuration
-
-To enable WebP support in compatible browsers, update your root `.htaccess` file with WebP-specific rules.
-
-#### Option 2: HTML Implementation
-
-For more information on WebP usage in HTML, visit [CSS-Tricks](https://css-tricks.com/using-webp-images/).
-
-## Quick WebP Support Test
-
-To check if WebP support is available via the GD Library, copy the following code into a `.php` file in your root directory and open it in a browser:
+To verify WebP support in your environment, create a `.php` file with the following content and open it in your browser:
 
 ```php
 <?php
@@ -76,10 +91,20 @@ if (function_exists('imagewebp')) {
 }
 ```
 
+## Browser Support and Fallbacks
+
+For browsers that don't support WebP, ensure your HTML or server configuration serves alternative formats like JPEG or PNG. Learn more about graceful degradation strategies on [CSS-Tricks](https://css-tricks.com/using-webp-images/).
+
 ## Roadmap
 
 - Enhanced documentation
-- Support for Imagick
-- PHP tests to verify WebP support
-- Automatic deletion of WebP images
-- WebP image flush functionality
+- ~Imagick support~
+- PHP tests to validate WebP compatibility
+- Automatic cleanup of unused `.webp` files
+- Command-line functionality for flushing `.webp` files
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests to improve the module.
+
+---
