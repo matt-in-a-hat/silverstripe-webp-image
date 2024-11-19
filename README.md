@@ -20,7 +20,7 @@ I've since forked it and modified it to use Imagick, added support for `.gif`, a
 ## Features
 
 - :white_check_mark: Automatically generates `.webp` versions of resized JPEG, PNG, and GIF images.
-- :white_check_mark: Significantly improves page load times with minimal configuration.
+- :white_check_mark: Significantly improves page load times with minimal configuration, [making it SEO friendly](https://web.dev/articles/choose-the-right-image-format?hl=en#:~:text=WebP%20and%20AVIF%20will%20generally%20provide%20better%20compression%20than%20older%20formats%2C%20and%20should%20be%20used%20where%20possible.%20You%20can%20use%20WebP%20or%20AVIF%20images%20along%20with%20a%20JPEG%20or%20PNG%20image%20as%20a%20fallback.%20See%20Use%20WebP%20images%20for%20more%20details.).
 - :white_check_mark: Designed for seamless integration with [NGINX](https://nginx.org/).
 - :white_check_mark: Native support for [Imagick](https://www.php.net/manual/en/book.imagick.php).
 
