@@ -11,6 +11,12 @@
 
 The **silverstripe-webp-image** module enhances your SilverStripe website's performance by automatically converting image assets to the efficient `.webp` format on demand. Learn more about WebP's benefits [here](https://developers.google.com/speed/webp). For additional details and insights, check out [Tips for Optimizing Page Speeds](https://lucshelton.com/blog/tips-for-optimizing-page-speeds/).
 
+## Thanks
+
+Thanks to [nomidi/silverstripe-webp-image](https://github.com/nomidi/silverstripe-webp-image) for developing the original version of this extension.
+
+I've since forked it and modified it to use Imagick, added support for `.gif`, and made other optimizations.
+
 ## Features
 
 - :white_check_mark: Automatically generates `.webp` versions of resized JPEG, PNG, and GIF images.
