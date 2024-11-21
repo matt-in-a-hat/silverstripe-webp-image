@@ -1,6 +1,7 @@
 {
     "name": "loveduckie/silverstripe-webp-image",
     "description": "Automatically generate and serve .webp images from existing .jpeg, .png, and .gif files.",
+    "homepage": "https://lucshelton.com/projects/personal/silverstripe-module-automatic-webp-image-conversion/",
     "keywords": [
         "silverstripe",
         "webp",
